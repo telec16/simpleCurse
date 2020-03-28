@@ -15,22 +15,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
-import org.bukkit.metadata.Metadatable;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import fr.telec.simpleCore.ConfigAccessor;
 import fr.telec.simpleCore.Language;
+import fr.telec.simpleCore.MetadataAccessor;
 
 import org.apache.commons.lang.StringUtils;
 
 //TODO Add async timer and event queue => better user experience
 public class SimpleCurse extends JavaPlugin implements Listener {
 
-	private Random r = new Random();
-	private CurseReader cr;
-	private Language lg;
 	private static final String CURSE_TIME_KEY = "curse_time";
+	private static final String CURSES_FILENAME = "curses.yml";
+	
+	private Random r = new Random();
+	private ConfigAccessor cr;
+	private Language lg;
 
 	/*
 	 * Plugin setup
@@ -39,7 +40,14 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	@Override
 	public void onEnable() {
 		getServer().getPluginManager().registerEvents(this, this);
-		cr = new CurseReader(this);
+		
+		saveDefaultConfig();
+		reloadConfig();
+		
+		cr = new ConfigAccessor(this, CURSES_FILENAME);
+		cr.saveDefaultConfig();
+		cr.reloadConfig();
+		
 		lg = new Language(this);
 	}
 
@@ -50,17 +58,18 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("update")) {
-			cr.reload();
+			reloadConfig();
+			cr.reloadConfig();
 			lg.reload();
-			
-			sender.sendMessage(ChatColor.GRAY + lg.get("updated"));
+
+			sender.sendMessage(ChatColor.GRAY + "[" + getName() + "]" + lg.get("updated"));
 			return true;
 		}
-		else if (cmd.getName().equalsIgnoreCase("curses") || cmd.getName().equalsIgnoreCase("swears")) {
+		else if (cmd.getName().equalsIgnoreCase("curses")) {
 			sender.sendMessage(ChatColor.RED + lg.get("taboo"));
-			for(String key : cr.getCurses().getKeys(false)) {
+			for(String key : getConfig().getKeys(false)) {
 				sender.sendMessage(ChatColor.DARK_RED + key);
-				for(String curse : cr.getCurses().getStringList(key)) {
+				for(String curse : cr.getConfig().getStringList(key)) {
 					sender.sendMessage(" - " + curse);
 				}
 			}
@@ -82,9 +91,9 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 		if(evt.getPlayer() != null && evt.getPlayer().isOnline()) {
 			String msg = evt.getMessage().toLowerCase();
 	
-			for (String key : cr.getCurses().getKeys(false)) {
+			for (String key : cr.getConfig().getKeys(false)) {
 				getLogger().log(Level.FINER, "key:" + key);
-				List<String> curses = cr.getCurses().getStringList(key);
+				List<String> curses = cr.getConfig().getStringList(key);
 	
 				// First check if there is a bad word
 				if (StringUtils.indexOfAny(msg, curses.toArray(new String[0])) != -1) {
@@ -124,41 +133,41 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	 */
 
 	public void doWarn(AsyncPlayerChatEvent evt, String bad_word) {
-		evt.setCancelled(cr.getConfig().getBoolean("warn.cancel"));
+		evt.setCancelled(getConfig().getBoolean("warn.cancel"));
 
-		String msg = formatMessage(evt, bad_word, cr.getConfig().getStringList("warn.messages"));
+		String msg = formatMessage(evt, bad_word, getConfig().getStringList("warn.messages"));
 		evt.getPlayer().sendMessage(msg);
 
 		try {
-			Sound sound = Sound.valueOf(""+cr.getConfig().getString("warn.sound"));
+			Sound sound = Sound.valueOf(""+getConfig().getString("warn.sound"));
 			evt.getPlayer().playSound(evt.getPlayer().getLocation(), sound, 10, 1);
 		}catch (IllegalArgumentException  e) {}
 	}
 
 	public void doSlap(AsyncPlayerChatEvent evt, String bad_word) {
-		evt.setCancelled(cr.getConfig().getBoolean("slap.cancel"));
+		evt.setCancelled(getConfig().getBoolean("slap.cancel"));
 
-		hit(evt.getPlayer(), cr.getConfig().getInt("slap.damages"));
+		hit(evt.getPlayer(), getConfig().getInt("slap.damages"));
 		
 		try {
-			Sound sound = Sound.valueOf(""+cr.getConfig().getString("slap.sound"));
+			Sound sound = Sound.valueOf(""+getConfig().getString("slap.sound"));
 			evt.getPlayer().playSound(evt.getPlayer().getLocation(), sound, 10, 1);
 		}catch (IllegalArgumentException  e) {}
 	}
 
 	public void doKick(AsyncPlayerChatEvent evt, String bad_word) {
-		evt.setCancelled(cr.getConfig().getBoolean("kick.cancel"));
+		evt.setCancelled(getConfig().getBoolean("kick.cancel"));
 		
 		//Check if not already kicked
 		if(evt.getPlayer().isOnline()) {
 			//Store in the player's metadata each time he curse
-			int times = (int) getMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, 0) + 1;
-			if(times >= cr.getConfig().getInt("kick.times")) { //And kick him when he reach the limit
-				setMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, times);
-				String msg = formatMessage(evt, bad_word, cr.getConfig().getStringList("kick.messages"));
+			int times = (int) MetadataAccessor.getMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, 0) + 1;
+			if(times >= getConfig().getInt("kick.times")) { //And kick him when he reach the limit
+				MetadataAccessor.setMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, times);
+				String msg = formatMessage(evt, bad_word, getConfig().getStringList("kick.messages"));
 				kick(evt.getPlayer(), msg);
 			} else {
-				setMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, 0);
+				MetadataAccessor.setMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, 0);
 			}
 		}
 	}
@@ -166,11 +175,11 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	public void doReplace(AsyncPlayerChatEvent evt, String bad_word) {
 		evt.setCancelled(false);
 		
-		String good_word = formatMessage(evt, bad_word, cr.getConfig().getStringList("replace.by"));
+		String good_word = formatMessage(evt, bad_word, getConfig().getStringList("replace.by"));
 		evt.setMessage(evt.getMessage().replace(bad_word, good_word));
 
 		try {
-			Sound sound = Sound.valueOf(""+cr.getConfig().getString("replace.sound"));
+			Sound sound = Sound.valueOf(""+getConfig().getString("replace.sound"));
 			evt.getPlayer().playSound(evt.getPlayer().getLocation(), sound, 10, 1);
 		}catch (IllegalArgumentException  e) {}
 	}
@@ -205,25 +214,6 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 				player.setNoDamageTicks(tck);
 			}
 		});
-	}
-	
-	private void setMetadata(JavaPlugin plugin, Metadatable object, String key, Object value) {
-	  object.setMetadata(key, new FixedMetadataValue(plugin,value));
-	}
-
-	@SuppressWarnings("unused")
-	private Object getMetadata(JavaPlugin plugin, Metadatable object, String key) {
-		return getMetadata(plugin, object, key, null);
-	}
-	private Object getMetadata(JavaPlugin plugin, Metadatable object, String key, Object def) {
-	  List<MetadataValue> values = object.getMetadata(key);  
-	  for (MetadataValue value : values) {
-	     // Plugins are singleton objects, so using == is safe here
-	     if (value.getOwningPlugin() == plugin) {
-	        return value.value();
-	     }
-	  }
-	  return def;
 	}
 		
 	private static String capitalize(String str) {
