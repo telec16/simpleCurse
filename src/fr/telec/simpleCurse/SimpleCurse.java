@@ -20,7 +20,7 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.metadata.Metadatable;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import fr.telec.utils.Language;
+import fr.telec.simpleCore.Language;
 
 import org.apache.commons.lang.StringUtils;
 

@@ -3,7 +3,7 @@ package fr.telec.simpleCurse;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import fr.telec.utils.ConfigAccessor;
+import fr.telec.simpleCore.ConfigAccessor;
 
 public class CurseReader {
 
