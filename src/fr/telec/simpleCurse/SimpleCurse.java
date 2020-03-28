@@ -51,11 +51,12 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("update")) {
 			cr.reload();
+			lg.reload();
+			
 			sender.sendMessage(ChatColor.GRAY + lg.get("updated"));
 			return true;
 		}
 		else if (cmd.getName().equalsIgnoreCase("curses") || cmd.getName().equalsIgnoreCase("swears")) {
-			cr.reload();
 			sender.sendMessage(ChatColor.RED + lg.get("taboo"));
 			for(String key : cr.getCurses().getKeys(false)) {
 				sender.sendMessage(ChatColor.DARK_RED + key);
@@ -125,7 +126,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	public void doWarn(AsyncPlayerChatEvent evt, String bad_word) {
 		evt.setCancelled(cr.getConfig().getBoolean("warn.cancel"));
 
-		String msg = getMessage(evt, bad_word, cr.getConfig().getStringList("warn.messages"));
+		String msg = formatMessage(evt, bad_word, cr.getConfig().getStringList("warn.messages"));
 		evt.getPlayer().sendMessage(msg);
 
 		try {
@@ -154,7 +155,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 			int times = (int) getMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, 0) + 1;
 			if(times >= cr.getConfig().getInt("kick.times")) { //And kick him when he reach the limit
 				setMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, times);
-				String msg = getMessage(evt, bad_word, cr.getConfig().getStringList("kick.messages"));
+				String msg = formatMessage(evt, bad_word, cr.getConfig().getStringList("kick.messages"));
 				kick(evt.getPlayer(), msg);
 			} else {
 				setMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, 0);
@@ -165,7 +166,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	public void doReplace(AsyncPlayerChatEvent evt, String bad_word) {
 		evt.setCancelled(false);
 		
-		String good_word = getMessage(evt, bad_word, cr.getConfig().getStringList("replace.by"));
+		String good_word = formatMessage(evt, bad_word, cr.getConfig().getStringList("replace.by"));
 		evt.setMessage(evt.getMessage().replace(bad_word, good_word));
 
 		try {
@@ -178,7 +179,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	 * Helpers
 	 */
 
-	private String getMessage(AsyncPlayerChatEvent evt, String bad_word, List<String> messages) {
+	private String formatMessage(AsyncPlayerChatEvent evt, String bad_word, List<String> messages) {
 		String msg = messages.get(r.nextInt(messages.size()));
 
 		msg = msg.replace("<player>", evt.getPlayer().getDisplayName())

@@ -1,6 +1,6 @@
 # Simple Curse - Bukkit
 
-You don't want your player to curse, and you don't want to spend time configuring a plugin ? SimpleCurse !
+You don't want your players to curse, and you don't want to spend time configuring a plugin ? SimpleCurse !
 
 ## How ?
 
