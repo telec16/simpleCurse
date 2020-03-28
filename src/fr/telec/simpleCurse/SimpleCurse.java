@@ -2,7 +2,9 @@ package fr.telec.simpleCurse;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -20,6 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.telec.simpleCore.ConfigAccessor;
 import fr.telec.simpleCore.Language;
 import fr.telec.simpleCore.MetadataAccessor;
+import fr.telec.simpleCore.StringHandler;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -66,7 +69,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 			return true;
 		}
 		else if (cmd.getName().equalsIgnoreCase("curses")) {
-			sender.sendMessage(ChatColor.RED + lg.get("taboo"));
+			sender.sendMessage(StringHandler.colorize(ChatColor.RED + lg.get("taboo")));
 			for(String key : getConfig().getKeys(false)) {
 				sender.sendMessage(ChatColor.DARK_RED + key);
 				for(String curse : cr.getConfig().getStringList(key)) {
@@ -135,7 +138,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	public void doWarn(AsyncPlayerChatEvent evt, String bad_word) {
 		evt.setCancelled(getConfig().getBoolean("warn.cancel"));
 
-		String msg = formatMessage(evt, bad_word, getConfig().getStringList("warn.messages"));
+		String msg = formatMessage(evt.getPlayer(), bad_word, getConfig().getStringList("warn.messages"));
 		evt.getPlayer().sendMessage(msg);
 
 		try {
@@ -164,7 +167,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 			int times = (int) MetadataAccessor.getMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, 0) + 1;
 			if(times >= getConfig().getInt("kick.times")) { //And kick him when he reach the limit
 				MetadataAccessor.setMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, times);
-				String msg = formatMessage(evt, bad_word, getConfig().getStringList("kick.messages"));
+				String msg = formatMessage(evt.getPlayer(), bad_word, getConfig().getStringList("kick.messages"));
 				kick(evt.getPlayer(), msg);
 			} else {
 				MetadataAccessor.setMetadata(this, evt.getPlayer(), CURSE_TIME_KEY, 0);
@@ -175,7 +178,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	public void doReplace(AsyncPlayerChatEvent evt, String bad_word) {
 		evt.setCancelled(false);
 		
-		String good_word = formatMessage(evt, bad_word, getConfig().getStringList("replace.by"));
+		String good_word = formatMessage(evt.getPlayer(), bad_word, getConfig().getStringList("replace.by"));
 		evt.setMessage(evt.getMessage().replace(bad_word, good_word));
 
 		try {
@@ -188,13 +191,14 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	 * Helpers
 	 */
 
-	private String formatMessage(AsyncPlayerChatEvent evt, String bad_word, List<String> messages) {
+	private String formatMessage(Player player, String bad_word, List<String> messages) {
 		String msg = messages.get(r.nextInt(messages.size()));
 
-		msg = msg.replace("<player>", evt.getPlayer().getDisplayName())
-		         .replace("<curse>", bad_word);
+		Map<String, String> values = new HashMap<String, String>();
+		values.put("player", player.getDisplayName());
+		values.put("curse", bad_word);
 
-		return msg;
+		return StringHandler.translate(msg, values);
 	}
 
 	private void kick(Player player, String reason) {
