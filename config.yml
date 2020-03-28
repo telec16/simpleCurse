@@ -1,0 +1,22 @@
+replace:
+  sound: 
+  by:
+    - "*#!"
+    - ...
+    - :)
+warn:
+  cancel: false
+  sound: BLOCK_ANVIL_LAND
+  messages:
+    - Don't say that
+    - Nope
+    - <curse> <player> <curse> <player> <curse> <player>
+slap:
+  cancel: false
+  sound: BLOCK_GLASS_BREAK
+  damages: 2
+kick:
+  cancel: true
+  times: 1
+  messages:
+    - Bow to death, <player>
