@@ -3,10 +3,12 @@ package fr.telec.simpleCurse;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import fr.telec.utils.ConfigAccessor;
+
 public class CurseReader {
 
-	private static final String CURSES_FILENAME = "curses.yml";
-	JavaPlugin plugin = null;
+	public static final String CURSES_FILENAME = "curses.yml";
+	private JavaPlugin plugin = null;
 	private ConfigAccessor curses = null;
 
 	public CurseReader(JavaPlugin plugin) {
@@ -15,6 +17,8 @@ public class CurseReader {
 
 		plugin.saveDefaultConfig();
 		curses.saveDefaultConfig();
+		
+		reload();
 	}
 
 	public void reload() {

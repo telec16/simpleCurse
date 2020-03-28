@@ -21,7 +21,7 @@
 * SOFTWARE.
 */
 
-package fr.telec.simpleCurse;
+package fr.telec.utils;
 
 import java.io.File;
 import java.io.IOException;

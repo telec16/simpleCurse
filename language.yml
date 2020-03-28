@@ -1,0 +1,9 @@
+language: enUs
+
+lang:
+  enUs:
+    updated: 'Updated to configuration files'
+    taboo: 'What you can''t say:'
+  frFR:
+    updated: 'Mis à jour à partir des fichiers de configuration'
+    taboo: 'Ce que vous ne pouvez pas dire :'

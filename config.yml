@@ -1,16 +1,16 @@
 replace:
-  sound: 
+  sound: null
   by:
-    - "*#!"
-    - ...
-    - :)
+  - '*#!'
+  - '...'
+  - :)
 warn:
   cancel: false
   sound: BLOCK_ANVIL_LAND
   messages:
-    - Don't say that
-    - Nope
-    - <curse> <player> <curse> <player> <curse> <player>
+  - Don't say that
+  - Nope
+  - <curse> <player> <curse> <player> <curse> <player>
 slap:
   cancel: false
   sound: BLOCK_GLASS_BREAK
@@ -19,4 +19,4 @@ kick:
   cancel: true
   times: 1
   messages:
-    - Bow to death, <player>
+  - Bow to death, <player>
