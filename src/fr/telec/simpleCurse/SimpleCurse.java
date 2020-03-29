@@ -10,7 +10,6 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -22,6 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import fr.telec.simpleCore.ConfigAccessor;
 import fr.telec.simpleCore.Language;
 import fr.telec.simpleCore.MetadataAccessor;
+import fr.telec.simpleCore.SoundHelper;
 import fr.telec.simpleCore.StringHandler;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,8 +33,10 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 	private static final String CURSES_FILENAME = "curses.yml";
 	
 	private Random r = new Random();
+	
 	private ConfigAccessor cr;
 	private Language lg;
+	private SoundHelper sh;
 
 	/*
 	 * Plugin setup
@@ -52,6 +54,8 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 		cr.reloadConfig();
 		
 		lg = new Language(this);
+		
+		sh = new SoundHelper(this);
 	}
 
 	@Override
@@ -65,7 +69,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 			cr.reloadConfig();
 			lg.reload();
 
-			sender.sendMessage(ChatColor.GRAY + "[" + getName() + "]" + lg.get("updated"));
+			sender.sendMessage(ChatColor.GRAY + "[" + getName() + "] " + lg.get("updated"));
 			return true;
 		}
 		else if (cmd.getName().equalsIgnoreCase("curses")) {
@@ -141,21 +145,15 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 		String msg = formatMessage(evt.getPlayer(), bad_word, getConfig().getStringList("warn.messages"));
 		evt.getPlayer().sendMessage(msg);
 
-		try {
-			Sound sound = Sound.valueOf(""+getConfig().getString("warn.sound"));
-			evt.getPlayer().playSound(evt.getPlayer().getLocation(), sound, 10, 1);
-		}catch (IllegalArgumentException  e) {}
+		sh.playFromConfig(evt.getPlayer(), "warn.sound");
 	}
 
 	public void doSlap(AsyncPlayerChatEvent evt, String bad_word) {
 		evt.setCancelled(getConfig().getBoolean("slap.cancel"));
 
 		hit(evt.getPlayer(), getConfig().getInt("slap.damages"));
-		
-		try {
-			Sound sound = Sound.valueOf(""+getConfig().getString("slap.sound"));
-			evt.getPlayer().playSound(evt.getPlayer().getLocation(), sound, 10, 1);
-		}catch (IllegalArgumentException  e) {}
+
+		sh.playFromConfig(evt.getPlayer(), "slap.sound");
 	}
 
 	public void doKick(AsyncPlayerChatEvent evt, String bad_word) {
@@ -181,10 +179,7 @@ public class SimpleCurse extends JavaPlugin implements Listener {
 		String good_word = formatMessage(evt.getPlayer(), bad_word, getConfig().getStringList("replace.by"));
 		evt.setMessage(evt.getMessage().replace(bad_word, good_word));
 
-		try {
-			Sound sound = Sound.valueOf(""+getConfig().getString("replace.sound"));
-			evt.getPlayer().playSound(evt.getPlayer().getLocation(), sound, 10, 1);
-		}catch (IllegalArgumentException  e) {}
+		sh.playFromConfig(evt.getPlayer(), "replace.sound");
 	}
 
 	/*
