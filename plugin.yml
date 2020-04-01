@@ -1,8 +1,10 @@
 name: simpleCurse
 prefix: simpleCurse
 main: fr.telec.simpleCurse.SimpleCurse
-version: 1.4
+version: 1.5
 api-version: 1.15
+softdepend:
+- SimpleCore
 load: POSTWORLD
 authors:
 - telec16
