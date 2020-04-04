@@ -8,8 +8,8 @@ warn:
   cancel: false
   sound: BLOCK_ANVIL_LAND
   messages:
-  - Don't say that
-  - Nope
+  - '&lDon''t say that'
+  - '&i&8Nope'
   - <curse> <player> <curse> <player> <curse> <player>
 slap:
   cancel: false
