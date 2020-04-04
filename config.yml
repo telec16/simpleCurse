@@ -9,7 +9,7 @@ warn:
   sound: BLOCK_ANVIL_LAND
   messages:
   - '&lDon''t say that'
-  - '&i&8Nope'
+  - '&o&8Nope'
   - <curse> <player> <curse> <player> <curse> <player>
 slap:
   cancel: false
