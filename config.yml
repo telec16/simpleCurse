@@ -1,4 +1,5 @@
 replace:
+  delay: 3
   sound: null
   by:
   - '*#!'
@@ -6,6 +7,7 @@ replace:
   - :)
 warn:
   cancel: false
+  delay: 3
   sound: BLOCK_ANVIL_LAND
   messages:
   - '&lDon''t say that'
@@ -13,10 +15,12 @@ warn:
   - <curse> <player> <curse> <player> <curse> <player>
 slap:
   cancel: false
+  delay: 10 # Should be minimum 10
   sound: BLOCK_GLASS_BREAK
   damages: 2
 kick:
   cancel: true
+  delay: 0 # For the sake of consistency
   times: 1
   messages:
   - Bow to death, <player>
